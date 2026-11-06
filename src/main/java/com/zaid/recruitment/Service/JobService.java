@@ -55,6 +55,7 @@ public class JobService {
     }
 
     public Message deleteJob(long id) {
+        jobRepository.findById(id).orElseThrow(() -> new JobNotFoundException("Job not found"));
         jobRepository.deleteById(id);
         return new Message("Job has been deleted successfully");
 

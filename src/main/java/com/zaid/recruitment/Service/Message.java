@@ -1,6 +1,7 @@
 package com.zaid.recruitment.Service;
 
 public class Message {
+    public Message(){}
     String message;
 
     public String getMessage() {

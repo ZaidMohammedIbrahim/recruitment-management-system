@@ -44,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Claims claims = jwtService.parseToken(token);
 
             if (jwtService.validateToken(claims)) {
-                String role = (String) claims.get("role");
+                String role = claims.get("role", String.class);
                 String username = claims.getSubject();
 
                 var authorities = List.of(
@@ -57,7 +57,9 @@ public class JwtFilter extends OncePerRequestFilter {
                         );
 
                 authentication.setDetails(new WebAuthenticationDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authentication);
             }
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
             SecurityContextHolder.clearContext();

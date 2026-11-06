@@ -48,7 +48,7 @@ public class ApplicationController {
         return new ResponseEntity<>(applicationService.getApplicationsByJob(id), HttpStatus.OK);
     }
     @GetMapping("/getByCandidateId/{id}")
-    @PreAuthorize("hasAnyRole('RECRUITER')")
+    @PreAuthorize("hasRole('RECRUITER')")
 
     public ResponseEntity<List<ApplicationResponseDto>> getApplicationsByCandidateId(@PathVariable("id") Long id) {
         return new ResponseEntity<>(applicationService.getApplicationsByCandidateId(id), HttpStatus.OK);

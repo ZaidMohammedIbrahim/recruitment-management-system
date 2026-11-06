@@ -32,11 +32,6 @@ public class ApplicationService {
     public ApplicationResponseDto getApplication(long id) {
         Application application= applicationRepository.findById(id).orElseThrow(()->new ApplicationNotFoundException("Application not found"));
         ApplicationResponseDto applicationResponseDto = getApplicationResponseDtoFromApplication(application);
-        applicationResponseDto.setCandidateId(application.getCandidate().getId());
-       // applicationResponseDto.setCandidateName(application.getCandidate().getName());
-        applicationResponseDto.setJobId(application.getJob().getId());
-        applicationResponseDto.setJobName(application.getJob().getTitle());
-       // BeanUtils.copyProperties(application,applicationResponseDto);
 
         return applicationResponseDto;
     }
@@ -44,6 +39,12 @@ public class ApplicationService {
     public ApplicationResponseDto getApplicationResponseDtoFromApplication(Application application) {
         ApplicationResponseDto applicationResponseDto = new ApplicationResponseDto();
         BeanUtils.copyProperties(application,applicationResponseDto);
+        applicationResponseDto.setCandidateId(application.getCandidate().getId());
+        applicationResponseDto.setJobId(application.getJob().getId());
+        applicationResponseDto.setJobName(application.getJob().getTitle());
+        applicationResponseDto.setCandidateName(application.getCandidate().getName());
+        
+
         return applicationResponseDto;
     }
     public List<ApplicationResponseDto> getApplications() {
@@ -51,11 +52,8 @@ public class ApplicationService {
         List<ApplicationResponseDto> applicationResponseDto=new ArrayList<>();
         for(Application application1:application){
             ApplicationResponseDto applicationResponseDto1= getApplicationResponseDtoFromApplication(application1);
-            applicationResponseDto1.setCandidateId(application1.getCandidate().getId());
-           // applicationResponseDto1.setCandidateName(application1.getCandidate().getName());
-            applicationResponseDto1.setJobId(application1.getJob().getId());
-            applicationResponseDto1.setJobName(application1.getJob().getTitle());
             applicationResponseDto.add(applicationResponseDto1);
+
         }
         return applicationResponseDto;
     }
@@ -78,7 +76,7 @@ public class ApplicationService {
     }
     public Message deleteApplication(long id,Authentication authentication) {
         Application application=applicationRepository.findById(id).orElseThrow(()->new ApplicationNotFoundException("Application not found"));
-        String candidateName=application.getCandidate().getUserEntity().getName();
+        String candidateName=application.getCandidate().getName();
         boolean checkName= candidateName.equals(authentication.getName());
         boolean isRecruiter = authentication.getAuthorities()
                 .stream()
@@ -105,10 +103,6 @@ public class ApplicationService {
         List<ApplicationResponseDto> applicationResponseDto=new ArrayList<>();
         for(Application application1:applications){
             ApplicationResponseDto applicationResponseDto1= getApplicationResponseDtoFromApplication(application1);
-            applicationResponseDto1.setCandidateId(application1.getCandidate().getId());
-           // applicationResponseDto1.setCandidateName(application1.getCandidate().getName());
-            applicationResponseDto1.setJobId(application1.getJob().getId());
-            applicationResponseDto1.setJobName(application1.getJob().getTitle());
             applicationResponseDto.add(applicationResponseDto1);
         }
         return applicationResponseDto;
@@ -118,10 +112,6 @@ public class ApplicationService {
         List<ApplicationResponseDto> applicationResponseDto=new ArrayList<>();
         for(Application application1:applications){
             ApplicationResponseDto applicationResponseDto1= getApplicationResponseDtoFromApplication(application1);
-            applicationResponseDto1.setCandidateId(application1.getCandidate().getId());
-           // applicationResponseDto1.setCandidateName(application1.getCandidate().getName());
-            applicationResponseDto1.setJobId(application1.getJob().getId());
-            applicationResponseDto1.setJobName(application1.getJob().getTitle());
             applicationResponseDto.add(applicationResponseDto1);
         }
         return applicationResponseDto;

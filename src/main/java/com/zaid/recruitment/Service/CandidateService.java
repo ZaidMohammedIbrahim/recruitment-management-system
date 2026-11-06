@@ -32,10 +32,19 @@ public class CandidateService  {
         this.candidateRepository = candidateRepository;
         this.skillRepository = skillRepository;
     }
+    public List<Skills> getSkillsFromRequestDto(CandidateRequestDto candidateRequestDto) {
+        List<Long> skills= candidateRequestDto.getSkillIds();
+        List<Skills> skillsList = new ArrayList<>();
+        for (Long skill : skills) {
+            Skills skills1=skillRepository.findById(skill).orElseThrow(()->new SkillNotFoundException("skill does not exists"));
+            skillsList.add(skills1);
+        }
+        return skillsList;
+    }
 
     public Message addCandidate(CandidateRequestDto candidateRequestDto) {
         Candidate candidate = new Candidate();
-        //candidate.setName(candidateRequestDto.getName());
+        candidate.setName(candidateRequestDto.getName());
         candidate.setEmail(candidateRequestDto.getEmail());
         candidate.setPhone(candidateRequestDto.getPhone());
         candidate.setAddress(candidateRequestDto.getAddress());
@@ -43,13 +52,7 @@ public class CandidateService  {
         candidate.setExperience(candidateRequestDto.getExperience());
         candidate.setResumeUrl(candidateRequestDto.getResumeUrl());
        // candidate.setCreatedAt(candidateRequestDto.getCreatedAt());
-        List<Long> skills= candidateRequestDto.getSkillIds();
-        List<Skills> skillsList = new ArrayList<>();
-        for (Long skill : skills) {
-            Skills skills1=skillRepository.findById(skill).orElseThrow(()->new SkillNotFoundException("skill does not exists"));
-            skillsList.add(skills1);
-        }
-        candidate.setSkills(skillsList);
+        candidate.setSkills(getSkillsFromRequestDto(candidateRequestDto));
 
         candidateRepository.save(candidate);
         return new Message("Candidate added successfully");
@@ -59,7 +62,7 @@ public class CandidateService  {
         String authName=authentication.getName();
 
         Candidate candidate = candidateRepository.findById(id).orElseThrow(() -> new CandidateNotFoundException("Candidate not found"));
-       boolean checkName= candidate.getUserEntity().getName().equals(authName);
+       boolean checkName= candidate.getName().equals(authName);
         if (checkName) {
             throw new org.springframework.security.access.AccessDeniedException(
                     "You cannot delete another candidate's profile");
@@ -73,20 +76,14 @@ public class CandidateService  {
         candidate.setResumeUrl(candidateRequestDto.getResumeUrl());
         candidate.setCreatedAt(LocalDateTime.now());
        // candidate.setPassword(candidateRequestDto.getPassword());
-        List<Long> skills= candidateRequestDto.getSkillIds();
-        List<Skills> skillsList = new ArrayList<>();
-        for (Long skill : skills) {
-            Skills skills1=skillRepository.findById(skill).orElseThrow(()->new SkillNotFoundException("skill does not exists"));
-            skillsList.add(skills1);
-        }
-        candidate.setSkills(skillsList);
+        candidate.setSkills(getSkillsFromRequestDto(candidateRequestDto));
         candidateRepository.save(candidate);
         return new Message("Candidate updated successfully");
     }
     public Message deleteCandidate(long id, Authentication authentication) {
 
         Candidate candidate = candidateRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+                .orElseThrow(() -> new CandidateNotFoundException("Candidate not found"));
 
         String loggedInUsername = authentication.getName();
 
@@ -94,7 +91,7 @@ public class CandidateService  {
                 .stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"));
 
-        boolean isOwner = candidate.getUserEntity().getName()
+        boolean isOwner = candidate.getName()
                 .equals(loggedInUsername);
 
         if (!isRecruiter && !isOwner) {
@@ -106,23 +103,26 @@ public class CandidateService  {
 
         return new Message("Candidate deleted successfully");
     }
+    public List<Long> getSkillIdsFromCandidate(Candidate candidate) {
+        List<Skills> skill=candidate.getSkills();
+        List<Long> skillIds = new ArrayList<>();
+        for (Skills skill1: skill) {
+            skillIds.add(skill1.getId());
+        }
+        return skillIds;
+    }
     public CandidateResponceDto getCandidate(long id) {
         Candidate candidate= candidateRepository.findById(id).orElseThrow(() -> new CandidateNotFoundException("candidate not found"));
         CandidateResponceDto candidateResponceDto = new CandidateResponceDto();
         candidateResponceDto.setId(candidate.getId());
-       // candidateResponceDto.setName(candidate.getName());
+        candidateResponceDto.setName(candidate.getName());
         candidateResponceDto.setEmail(candidate.getEmail());
         candidateResponceDto.setPhone(candidate.getPhone());
         candidateResponceDto.setAddress(candidate.getAddress());
         candidateResponceDto.setExperience(candidate.getExperience());
         candidateResponceDto.setResumeUrl(candidate.getResumeUrl());
         candidateResponceDto.setCreatedAt(candidate.getCreatedAt());
-        List<Skills> skill=candidate.getSkills();
-        List<Long> skillIds = new ArrayList<>();
-        for (Skills skill1: skill) {
-            skillIds.add(skill1.getId());
-        }
-        candidateResponceDto.setSkillIds(skillIds);
+        candidateResponceDto.setSkillIds(getSkillIdsFromCandidate(candidate));
         return candidateResponceDto;
     }
     public List<CandidateResponceDto> getCandidates() {
@@ -132,19 +132,14 @@ public class CandidateService  {
         for (Candidate candidate1 : candidate) {
             CandidateResponceDto candidateResponceDto1 = new CandidateResponceDto();
             candidateResponceDto1.setId(candidate1.getId());
-          //  candidateResponceDto1.setName(candidate1.getName());
+            candidateResponceDto1.setName(candidate1.getName());
             candidateResponceDto1.setEmail(candidate1.getEmail());
             candidateResponceDto1.setPhone(candidate1.getPhone());
             candidateResponceDto1.setAddress(candidate1.getAddress());
             candidateResponceDto1.setExperience(candidate1.getExperience());
             candidateResponceDto1.setResumeUrl(candidate1.getResumeUrl());
             candidateResponceDto1.setCreatedAt(candidate1.getCreatedAt());
-            List<Skills> skill=candidate1.getSkills();
-            List<Long> skillIds = new ArrayList<>();
-            for (Skills skill1: skill) {
-                skillIds.add(skill1.getId());
-            }
-            candidateResponceDto1.setSkillIds(skillIds);
+            candidateResponceDto1.setSkillIds(getSkillIdsFromCandidate(candidate1));
             candidateResponceDto.add(candidateResponceDto1);
 
         }
@@ -153,21 +148,16 @@ public class CandidateService  {
     public CandidateResponceDto getCandidatesByEmail(String email) {
 
         Candidate candidates= candidateRepository.findByEmail(email).orElseThrow(()->new CandidateNotFoundException("candidate not found"));
-        List<CandidateResponceDto> candidateResponceDtos= new ArrayList<>();
         CandidateResponceDto candidateResponceDto= new CandidateResponceDto();
         candidateResponceDto.setId(candidates.getId());
         candidateResponceDto.setEmail(candidates.getEmail());
         candidateResponceDto.setPhone(candidates.getPhone());
         candidateResponceDto.setAddress(candidates.getAddress());
         candidateResponceDto.setExperience(candidates.getExperience());
+        candidateResponceDto.setName(candidates.getName());
         candidateResponceDto.setResumeUrl(candidates.getResumeUrl());
         candidateResponceDto.setCreatedAt(candidates.getCreatedAt());
-        List<Skills> skill=candidates.getSkills();
-        List<Long> skillIds = new ArrayList<>();
-        for (Skills skill1: skill) {
-            skillIds.add(skill1.getId());
-        }
-        candidateResponceDto.setSkillIds(skillIds);
+        candidateResponceDto.setSkillIds(getSkillIdsFromCandidate(candidates));
         return candidateResponceDto;
 
     }
@@ -181,12 +171,8 @@ public class CandidateService  {
         candidateResponceDto.setExperience(candidate.getExperience());
         candidateResponceDto.setResumeUrl(candidate.getResumeUrl());
         candidateResponceDto.setCreatedAt(candidate.getCreatedAt());
-        List<Skills> skill=candidate.getSkills();
-        List<Long> skillIds = new ArrayList<>();
-        for (Skills skill1: skill) {
-            skillIds.add(skill1.getId());
-        }
-        candidateResponceDto.setSkillIds(skillIds);
+        candidateResponceDto.setName(candidate.getName());
+        candidateResponceDto.setSkillIds(getSkillIdsFromCandidate(candidate));
         return candidateResponceDto;
     }
 

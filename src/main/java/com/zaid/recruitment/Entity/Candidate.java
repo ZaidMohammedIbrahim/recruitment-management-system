@@ -3,6 +3,8 @@ package com.zaid.recruitment.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zaid.recruitment.Auth.UserEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,6 +16,7 @@ public class Candidate {
    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
+   @Email
     String email;
     String name;
     String phone;

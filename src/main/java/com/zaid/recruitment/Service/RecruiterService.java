@@ -60,14 +60,10 @@ public class RecruiterService {
         return recruiterResponseDto;
 
     }
-    public List<RecruiterResponseDto> findByEmail(String email) {
-        List<Recruiter> recruiter=recruiterRepository.findByEmail(email);
-        List<RecruiterResponseDto> recruiterResponseDto=new ArrayList<>();
-        for (Recruiter recruiter1 : recruiter) {
-            RecruiterResponseDto recruiterResponseDto1 = new RecruiterResponseDto();
-            BeanUtils.copyProperties(recruiter1,recruiterResponseDto1);
-            recruiterResponseDto.add(recruiterResponseDto1);
-        }
+    public RecruiterResponseDto findByEmail(String email) {
+        Recruiter recruiter=recruiterRepository.findByEmail(email);
+        RecruiterResponseDto recruiterResponseDto=new RecruiterResponseDto();
+            BeanUtils.copyProperties(recruiter,recruiterResponseDto);
         return recruiterResponseDto;
     }
     public RecruiterResponseDto findByRecruiter_id(long recruiter_id) {

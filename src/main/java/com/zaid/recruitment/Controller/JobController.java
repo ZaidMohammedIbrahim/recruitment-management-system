@@ -21,12 +21,6 @@ public class JobController {
         this.jobService = jobService;
     }
 
-    public Job getJobFromRequestDto(JobRequestDto jobRequestDto) {
-        Job job = new Job();
-        BeanUtils.copyProperties(jobRequestDto, job);
-        return job;
-    }
-
     @PostMapping("/add")
     public ResponseEntity<Message> addJob(@RequestBody JobRequestDto jobRequestDto) {
         return new ResponseEntity<>(jobService.addJob(jobRequestDto), HttpStatus.CREATED);
@@ -43,18 +37,12 @@ public class JobController {
         return new ResponseEntity<>(jobService.deleteJob(id), HttpStatus.OK);
     }
 
-    public JobResponseDto getJobResponseDto(Job job) {
-        JobResponseDto jobResponseDto = new JobResponseDto();
-        BeanUtils.copyProperties(job, jobResponseDto);
-        return jobResponseDto;
-    }
-
     @GetMapping("/getById/{id}")
     public ResponseEntity<JobResponseDto> getJobById(@PathVariable("id") long id) {
         return new ResponseEntity<>(jobService.getJob(id), HttpStatus.OK);
     }
     @GetMapping("/getAll")
-    //@PreAuthorize("hasRole('RECRUITER')")
+    @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<List<JobResponseDto>> getAllJobs() {
         return new ResponseEntity<>(jobService.getJobs(), HttpStatus.OK);
     }

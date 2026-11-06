@@ -42,7 +42,7 @@ public class RecruiterController {
     @GetMapping("/getByEmail/{email}")
     @PreAuthorize("hasRole('ADMIN')")
 
-    public ResponseEntity<List<RecruiterResponseDto>> findByEmail(@PathVariable("email") String email) {
+    public ResponseEntity<RecruiterResponseDto> findByEmail(@PathVariable("email") String email) {
         return new ResponseEntity<>(recruiterService.findByEmail(email),HttpStatus.OK);
     }
     @GetMapping("/getById/{id}")
